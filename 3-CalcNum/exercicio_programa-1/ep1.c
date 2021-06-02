@@ -13,6 +13,9 @@
 #define _ERRO_TOLERAVEL 1e-8
 
 // Conversões de base - INÍCIO
+void conversao_De_Base()
+{}
+
 // Conversões de base - FIM
 
 // Sistema Linear - INÍCIO
@@ -267,6 +270,9 @@ int sistema_linear()
 // Sistema Linear - FIM
 
 // Equações Algébricas - INÍCIO
+void equacao_Algebrica()
+{}
+
 // Equações Algébricas - FIM
 
 // Menu Principal
@@ -294,7 +300,7 @@ int main(int argc, char const *argv[])
       break;
     case 'E':
       printf("Equação Algébrica\n");
-      //equacao_Algebrica();
+      equacao_Algebrica();
       break;
     case 'S':
       printf("Sistema Linear\n");
