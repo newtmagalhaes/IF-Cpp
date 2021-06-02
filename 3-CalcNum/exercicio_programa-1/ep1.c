@@ -1,16 +1,16 @@
 /** Exercício Programa 1
  * Alunos:
  *  - Anilton Magalhães de Castro
- *  - Lucas Dantas
- *  - Pablo Moreira
- *  - Rodrigo Matos
+ *  - Lucas Dantas Moura Ferreira
+ *  - Pablo Moreira de Sousa
+ *  - Rodrigo Matos Aguiar
 */
 
 #include <stdio.h>
 #include <stdlib.h>
 
 #define FILENAME_LENGTH 20
-#define _ERRO_TOLERAVEL 1e-5
+#define _ERRO_TOLERAVEL 1e-8
 
 // Conversões de base - INÍCIO
 // Conversões de base - FIM
@@ -204,7 +204,7 @@ int sistema_linear()
   FILE *file_ptr = fopen(filename, "r");
   if (file_ptr == NULL)
   {
-    printf("nao foi possivel abrir o arquivo");
+    printf("nao foi possivel abrir o arquivo\n");
     return -1;
   }
 
@@ -215,7 +215,7 @@ int sistema_linear()
   double **m = alocar_matriz(n, n + 1);
   if (m == NULL)
   {
-    printf("nao foi possivel alocar matriz");
+    printf("nao foi possivel alocar matriz\n");
     fclose(file_ptr);
     return -1;
   }
@@ -246,7 +246,7 @@ int sistema_linear()
   int tipo_de_SL = substituicao_retroativa(m, n, x);
   if (tipo_de_SL == 2)
   {
-    printf("Sistema Linear incompativel");
+    printf("Sistema Linear incompativel\n");
   }
   else
   {
@@ -269,9 +269,45 @@ int sistema_linear()
 // Equações Algébricas - INÍCIO
 // Equações Algébricas - FIM
 
+// Menu Principal
 int main(int argc, char const *argv[])
 {
-  int status = sistema_linear();
+  char option;
+  do
+  {
+    printf("\n< -- Escolha a seguir a opção desejada: -- >\n");
+    printf("C - Conversões de base\n");
+    printf("E - Equação Algébrica\n");
+    printf("S - Sistema Linear\n");
+    printf("F - Finalizar programa\n");
+    do
+    {
+      scanf("%c", &option);
+    } while (option == '\n');
+    // scanf("%c\n", &option);
 
-  return status;
+    switch (option)
+    {
+    case 'C':
+      printf("Conversão de Base\n");
+      //conversao_De_Base();
+      break;
+    case 'E':
+      printf("Equação Algébrica\n");
+      //equacao_Algebrica();
+      break;
+    case 'S':
+      printf("Sistema Linear\n");
+      sistema_linear();
+      break;
+    case 'F':
+      printf("Programa finalizado\n");
+      break;
+    default:
+      printf("Opção Inválida.\n");
+      break;
+    };
+  } while (option != 'F');
+
+  return 0;
 }
