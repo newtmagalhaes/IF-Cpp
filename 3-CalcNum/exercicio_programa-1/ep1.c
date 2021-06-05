@@ -243,17 +243,17 @@ int sistema_linear()
   }
 
   unsigned *aux = metodo_jordan(m, n);
-  printf("matriz apos metodo Jordan:\n");
+  printf("\nMatriz apos Metodo de Jordan:\n");
   mostrar_matriz(m, n, n + 1, aux);
 
   int tipo_de_SL = substituicao_retroativa(m, n, x);
   if (tipo_de_SL == 2)
   {
-    printf("Sistema Linear incompativel\n");
+    printf("\nSistema Linear incompativel\n");
   }
   else
   {
-    printf("Sistema linear compativel %s\n", tipo_de_SL == 0 ? "determinado" : "indeterminado");
+    printf("\nSistema linear compativel %s\n", tipo_de_SL == 0 ? "determinado" : "indeterminado");
     for (unsigned i = 0; i < n; i++)
     {
       printf("x%d = %10.3lf\n", aux[i] + 1, x[i]);
@@ -295,22 +295,22 @@ int main(int argc, char const *argv[])
     switch (option)
     {
     case 'C':
-      printf("Conversão de Base\n");
+      printf("\nConversão de Base\n");
       //conversao_De_Base();
       break;
     case 'E':
-      printf("Equação Algébrica\n");
+      printf("\nEquação Algébrica\n");
       equacao_Algebrica();
       break;
     case 'S':
-      printf("Sistema Linear\n");
+      printf("\nSistema Linear\n");
       sistema_linear();
       break;
     case 'F':
-      printf("Programa finalizado\n");
+      printf("\nPrograma finalizado\n");
       break;
     default:
-      printf("Opção Inválida.\n");
+      printf("\nOpção Inválida.\n");
       break;
     };
   } while (option != 'F');
