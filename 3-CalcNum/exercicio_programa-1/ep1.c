@@ -57,16 +57,13 @@ char* converter_numero(char* resultado, double numDecimal, int base) {
     // Conversão da parte fracionária
     double parteFracionaria = parte_fracionaria(numDecimal);
     i += 1;
+    // A precisão é de 20 casas decimais
     for (int j = 0; j < 20; j++) {
         double produto = parteFracionaria * base;
         resultado[i] = algarismo_correspondente((int) produto);
         parteFracionaria = parte_fracionaria(produto);
         i += 1;
         printf("pf%2d: %.20f\n", i, parteFracionaria);
-        if(parteFracionaria == 0)
-        {
-            break;
-        }
     }
     resultado[i] = '\0';
     return resultado;
