@@ -8,13 +8,83 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #define FILENAME_LENGTH 20
 #define _ERRO_TOLERAVEL 1e-8
 
 // Conversões de base - INÍCIO
+
+// Converte um valor em decimal para um algarismo em uma outra base qualquer. Vai apresentar comportamento inesperado caso o valor seja negativo ou grande o bastante
+char algarismo_correspondente(int algDecimal) {
+    if (algDecimal <= 9) {
+        return algDecimal + '0';
+    } else {
+        return algDecimal - 10 + 'A';
+    }
+}
+
+void string_reversa(char* string) {
+    int tamString = strlen(string);
+    int i;
+    for (i = 0; i < tamString / 2; i++)
+    {
+        char aux = string[i];
+        string[i] = string[tamString - i - 1];
+        string[tamString - i - 1] = aux;
+    }
+}
+
+// Retorna a parte fracionária de um número
+double parte_fracionaria(double valor) {
+    return valor - (int) valor;
+}
+
+// Converte um número de base 10 para uma outra base
+char* converter_numero(char* resultado, double numDecimal, int base) {
+    // Conversão da parte inteira
+    int parteInteira = (int) numDecimal;
+    int i = 0;
+    while (parteInteira > 0)
+    {
+        resultado[i] = algarismo_correspondente(parteInteira % base);
+        parteInteira /= base;
+        i += 1;
+    }
+    resultado[i] = '\0';
+    string_reversa(resultado);
+    resultado[i] = '.';
+    // Conversão da parte fracionária
+    double parteFracionaria = parte_fracionaria(numDecimal);
+    i += 1;
+    for (int j = 0; j < 20; j++) {
+        double produto = parteFracionaria * base;
+        resultado[i] = algarismo_correspondente((int) produto);
+        parteFracionaria = parte_fracionaria(produto);
+        i += 1;
+        printf("pf%2d: %.20f\n", i, parteFracionaria);
+        if(parteFracionaria == 0)
+        {
+            break;
+        }
+    }
+    resultado[i] = '\0';
+    return resultado;
+}
+
 void conversao_de_base()
-{}
+{
+    double numDecimal;
+    char numConvertido[100];
+    
+    printf("Digite um numero decimal: ");
+    scanf("%lf", &numDecimal);
+    printf("\nRepresentação\n");
+//    printf("Decimal: %.15f\n", numDecimal);
+    printf("Binario: %s\n", converter_numero(numConvertido, numDecimal, 2));
+    printf("Octal: %s\n", converter_numero(numConvertido, numDecimal, 8));
+    printf("Hexadecimal: %s\n", converter_numero(numConvertido, numDecimal, 16));
+}
 
 // Conversões de base - FIM
 
