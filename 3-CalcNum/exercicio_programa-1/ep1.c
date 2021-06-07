@@ -12,11 +12,13 @@
 
 #define FILENAME_LENGTH 20
 #define _ERRO_TOLERAVEL 1e-8
+#define TRUE 1
+#define FALSE 0
 
 // Conversões de base - INÍCIO
 
-// Converte um valor em decimal para um algarismo em uma outra base qualquer. Vai apresentar comportamento inesperado caso o valor seja negativo ou grande o bastante
-char algarismo_correspondente(int algDecimal) {
+// Converte um valor decimal para um algarismo em uma outra base qualquer. Vai apresentar comportamento inesperado caso o valor seja negativo ou grande o bastante
+char converter_algDecimal(int algDecimal) {
     if (algDecimal <= 9) {
         return algDecimal + '0';
     } else {
@@ -24,6 +26,7 @@ char algarismo_correspondente(int algDecimal) {
     }
 }
 
+// Modifica uma string de forma que os seus elementos estejam na posição oposta a que começaram, de acordo com o tamanho da string
 void string_reversa(char* string) {
     int tamString = strlen(string);
     int i;
@@ -41,31 +44,130 @@ double parte_fracionaria(double valor) {
 }
 
 // Converte um número de base 10 para uma outra base
-char* converter_numero(char* resultado, double numDecimal, int base) {
+char* converter_numDecimal(char* resultado, double numDecimal, int base) {
     // Conversão da parte inteira
     int parteInteira = (int) numDecimal;
     int i = 0;
     while (parteInteira > 0)
     {
-        resultado[i] = algarismo_correspondente(parteInteira % base);
+        resultado[i] = converter_algDecimal(parteInteira % base);
         parteInteira /= base;
-        i += 1;
+        i++;
     }
     resultado[i] = '\0';
     string_reversa(resultado);
     resultado[i] = '.';
     // Conversão da parte fracionária
     double parteFracionaria = parte_fracionaria(numDecimal);
-    i += 1;
+    i++;
     // A precisão é de 20 casas decimais
     for (int j = 0; j < 20; j++) {
         double produto = parteFracionaria * base;
-        resultado[i] = algarismo_correspondente((int) produto);
+        resultado[i] = converter_algDecimal((int) produto);
         parteFracionaria = parte_fracionaria(produto);
-        i += 1;
-        printf("pf%2d: %.20f\n", i, parteFracionaria);
+        i++;
+//        printf("pf%2d: %.20f\n", i, parteFracionaria);
     }
     resultado[i] = '\0';
+    return resultado;
+}
+
+// Converte um valor binário, armazenado numa string, em um algarismo em uma base potência de 2
+char converter_algBinario(char* algBinario)
+{
+    int numConvertido = 0;
+    int numDigitos = strlen(algBinario);
+    for (int i = 0; i < numDigitos; i++)
+    {
+        // Transforma cada caractere em número e multiplica esse número por uma potência de 2 adequada
+        numConvertido += (algBinario[i] - '0') * 1 << (numDigitos - i - 1);
+    }
+    return converter_algDecimal(numConvertido);
+}
+
+// Limpa uma string, isto é, seta todos os caracteres para 0, até mesmo os caracteres nulos
+void limpar_string(char* string, int tamanhoString)
+{
+    for (int i = 0; i < tamanhoString; i++)
+    {
+        string[i] = 0;
+    }
+}
+
+// Calcula e devolve o logaritmo de um número na base 2. Funciona para logaritmandos que são potências de 2
+int logaritmo2(int logaritmando)
+{
+    int logaritmo = 0;
+    while (logaritmando > 1) {
+        logaritmando /= 2;
+        logaritmo++;
+    }
+    return logaritmo;
+}
+
+// Converte um número de base 2 para uma outra base. Funciona para bases que são potências de 2
+char* converter_numBinario(char* resultado, char* numBinario, int base)
+{
+    int numDigitosPacote = logaritmo2(base);
+    int posicaoSeparador = 0;
+    int posicaoFinal = strlen(numBinario);
+    int i = 0;
+    int j;
+    
+    while (numBinario[i] != '.')
+    {
+        posicaoSeparador++;
+        i++;
+    }
+    limpar_string(resultado, 100);
+    // Conversão da parte inteira
+    i = posicaoSeparador;
+    j = 0;
+    do
+    {
+        i -= numDigitosPacote;
+        char algBinario[numDigitosPacote + 1];
+        for (int k = 0; k < numDigitosPacote; k++)
+        {
+            if (i + k >= 0)
+            {
+                algBinario[k] = numBinario[i + k];
+            }
+            else
+            {
+                algBinario[k] = '0';
+            }
+        }
+        algBinario[numDigitosPacote] = '\0';
+        resultado[j] = converter_algBinario(algBinario);
+        j++;
+    } while (i > 0);
+    resultado[j] = '\0';
+    string_reversa(resultado);
+    resultado[j] = '.';
+    // Conversão da parte fracionária
+    i = posicaoSeparador + 1;
+    j++;
+    do
+    {
+        char algBinario[numDigitosPacote + 1];
+        for (int k = 0; k < numDigitosPacote; k++)
+        {
+            if (i + k >= 0)
+            {
+                algBinario[k] = numBinario[i + k];
+            }
+            else
+            {
+                algBinario[k] = '0';
+            }
+        }
+        algBinario[numDigitosPacote] = '\0';
+        resultado[j] = converter_algBinario(algBinario);
+        i += numDigitosPacote;
+        j++;
+    } while (i < posicaoFinal);
+    resultado[j] = '\0';
     return resultado;
 }
 
@@ -78,9 +180,13 @@ void conversao_de_base()
     scanf("%lf", &numDecimal);
     printf("\nRepresentação\n");
 //    printf("Decimal: %.15f\n", numDecimal);
-    printf("Binario: %s\n", converter_numero(numConvertido, numDecimal, 2));
-    printf("Octal: %s\n", converter_numero(numConvertido, numDecimal, 8));
-    printf("Hexadecimal: %s\n", converter_numero(numConvertido, numDecimal, 16));
+    char numBinario[100];
+    strcpy(numBinario, converter_numDecimal(numConvertido, numDecimal, 2));
+    printf("Binario: %s\n", numBinario);
+    printf("Octal 1o: %s\n", converter_numDecimal(numConvertido, numDecimal, 8));
+    printf("Octal 2o: %s\n", converter_numBinario(numConvertido, numBinario, 8));
+    printf("Hexadecimal 1o: %s\n", converter_numDecimal(numConvertido, numDecimal, 16));
+    printf("Hexadecimal 2o: %s\n", converter_numBinario(numConvertido, numBinario, 16));
 }
 
 // Conversões de base - FIM
