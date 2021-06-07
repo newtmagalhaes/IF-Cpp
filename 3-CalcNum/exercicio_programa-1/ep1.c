@@ -309,6 +309,28 @@ double eval(Polinomio *p, double x)
   return r;
 }
 
+// modificar p para obter x^n * p(1/x);
+void _inverter_ordem_de_coeficientes(Polinomio *p)
+{
+  int n = p->n_coefs - 1;
+  double aux;
+  for (int i = 0; i < n / 2; i++)
+  {
+    aux = p->coefs[i];
+    p->coefs[i] = p->coefs[n - i];
+    p->coefs[n - i] = aux;
+  }
+}
+
+// modificar p para obter p(-x)
+void _simetrico_indices_impares(Polinomio *p)
+{
+  for (int i = 1; i < p->n_coefs; i += 2)
+  {
+    p->coefs[i] = -p->coefs[i];
+  }
+}
+
 /// Preenche o polinômio conforme inputs da linha de comando @param p polinômio a ser preenchido.
 void ler_polinomio(Polinomio *p)
 {
@@ -331,11 +353,45 @@ void liberar_polinomio(Polinomio *p)
   printf("polinomio desalocado\n");
 }
 
-double _L_teorema_de_lagrange(Polinomio *p)
+// usado em _L_teorema_de_lagrange
+typedef enum lagrange
 {
+  L0, // não modificar p
+  L1, // modificar p para obter p1(x) = x^n * p(1/x);
+  L2, // modificar p para obter p2(x) = p(-x)
+  L3  // modificar p para obter p3(x) = x^n * p(-1/x);
+} _L_Lagrange;
+
+double _L_teorema_de_lagrange(Polinomio *p, _L_Lagrange l)
+{
+  // Fazer alterações necessárias conforme o retorno desejado
+  if (l == L3 || l == L2)
+  {
+    // (alterar o sinal dos coeficientes de índice ímpar)
+    _simetrico_indices_impares(p);
+  }
+  if (l == L3 || l == L1)
+  {
+    // (inverter a ordem dos coeficientes)
+    _inverter_ordem_de_coeficientes(p);
+  }
+
+  int n = p->n_coefs - 1,
+      desfazer_oposicao = 0;
+  // SE an < 0, p(x) é redefinido para -p(x)
+  if (p->coefs[n] < 0)
+  {
+    desfazer_oposicao = 1;
+    for (int i = 0; i < p->n_coefs; i++)
+    {
+      p->coefs[i] = -p->coefs[i];
+    }
+  }
+
   // Definir k e B
-  int k = 0, n = p->n_coefs - 1;
-  double B = 0;
+  int k = 0;    // o maior índices dos coeficientes negativos;
+  double B = 0, // o módulo do menor coeficiente negativo;
+      an = p->coefs[n];
   for (int i = p->n_coefs - 1; i >= 0; i--)
   {
     if (p->coefs[i] < 0)
@@ -351,24 +407,39 @@ double _L_teorema_de_lagrange(Polinomio *p)
     }
   }
 
-  return 1 + pow(B/p->coefs[n], 1/(n - k));
-}
+  // Desfazendo alterações recuperando o polinômio original
+  if (l == L3 || l == L1)
+  {
+    // (inverter a ordem dos coeficientes)
+    _inverter_ordem_de_coeficientes(p);
+  }
+  if (l == L3 || l == L2)
+  {
+    // (alterar o sinal dos coeficientes de índice ímpar)
+    _simetrico_indices_impares(p);
+  }
 
-double _L1_teorema_de_lagrange(Polinomio *p);
-double _L2_teorema_de_lagrange(Polinomio *p);
-double _L3_teorema_de_lagrange(Polinomio *p);
+  if (desfazer_oposicao)
+  {
+    for (int i = 0; i < p->n_coefs; i++)
+    {
+      p->coefs[i] = -p->coefs[i];
+    }
+  }
+  return 1 + pow(B / an, 1.0 / (n - k));
+}
 
 // deverá calcular e exibir os intervalos onde se encontram as
 // raízes reais negativas e as raízes reais positivas da equação.
-double teorema_de_lagrange(Polinomio *p)
+void teorema_de_lagrange(Polinomio *p)
 {
-  double L = _L_teorema_de_lagrange(p),
-         L1 = _L1_teorema_de_lagrange(p),
-         L2 = _L2_teorema_de_lagrange(p),
-         L3 = _L3_teorema_de_lagrange(p);
+  double Lps = _L_teorema_de_lagrange(p, L0),
+         Lpi = 1 / _L_teorema_de_lagrange(p, L1),
+         Lni = -_L_teorema_de_lagrange(p, L2),
+         Lns = -1 / _L_teorema_de_lagrange(p, L3);
 
-  printf("intervalo contendo as raizes reais positivas: [%lf, %lf]\n", L1, L);
-  printf("intervalo contendo as raizes reais negativas: [%lf, %lf]\n", L2, L3);
+  printf("intervalo contendo as raizes reais negativas: [%lf, %lf]\n", Lni, Lns);
+  printf("intervalo contendo as raizes reais positivas: [%lf, %lf]\n", Lpi, Lps);
 }
 
 int equacao_algebrica()
@@ -387,6 +458,16 @@ int equacao_algebrica()
 
   // Solicitar os coeficientes an até a0
   ler_polinomio(p);
+
+  // calcular e exibir os intervalos onde se encontram as raízes
+  // reais negativas e as raízes reais positivas da equação.
+  teorema_de_lagrange(p);
+
+  // solicitar ao usuário que informe um intervalo [a, b]
+  // verificar se o polinômio tem sinais opostos nas extremidades desse intervalo.
+
+  liberar_polinomio(p);
+  return 0;
 }
 
 // Equações Algébricas - FIM
