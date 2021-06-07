@@ -298,15 +298,23 @@ Polinomio *alocar_polinomio(unsigned n_termos)
   return p;
 }
 
+// Executa o Método de Briot-Ruffini
+double metodo_briot_ruffini(Polinomio *p, double x, unsigned i)
+{
+  if (i == p->n_coefs - 1)
+  {
+    return p->coefs[i];
+  }
+  else
+  {
+    return x * metodo_briot_ruffini(p, x, i + 1) + p->coefs[i];
+  }
+}
+
 // Computa P(x)
 double eval(Polinomio *p, double x)
 {
-  double r = 0;
-  for (unsigned i = 0; i < p->n_coefs; i++)
-  {
-    r += p->coefs[i] * pow(x, i);
-  }
-  return r;
+  return metodo_briot_ruffini(p, x, 0);
 }
 
 // modificar p para obter x^n * p(1/x);
@@ -464,7 +472,23 @@ int equacao_algebrica()
   teorema_de_lagrange(p);
 
   // solicitar ao usuário que informe um intervalo [a, b]
+  double a, b;
+  printf("Informe o início do intervalo, a: ");
+  scanf("%lf", &a);
+  printf("Informe o final do intervalo, b: ");
+  scanf("%lf", &b);
+
   // verificar se o polinômio tem sinais opostos nas extremidades desse intervalo.
+  if (eval(p, a) * eval(p, b) < 0)
+  {
+    // calcular e exibir uma aproximação para uma raiz contida nesse intervalo
+  }
+  else
+  {
+    // informar que o número de raízes no intervalo é par.
+    printf("O numero de raizes no intervalo e par\n");
+  }
+  
 
   liberar_polinomio(p);
   return 0;
