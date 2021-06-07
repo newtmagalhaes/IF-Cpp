@@ -8,13 +8,15 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 
 #define FILENAME_LENGTH 20
 #define _ERRO_TOLERAVEL 1e-8
 
 // Conversões de base - INÍCIO
-void conversao_De_Base()
-{}
+void conversao_de_base()
+{
+}
 
 // Conversões de base - FIM
 
@@ -270,8 +272,122 @@ int sistema_linear()
 // Sistema Linear - FIM
 
 // Equações Algébricas - INÍCIO
-void equacao_Algebrica()
-{}
+typedef struct _polinomio
+{
+  unsigned n_coefs;
+  double *coefs;
+} Polinomio;
+
+/// @return um polinômio alocado dinamicamente ou NULL caso não consiga
+Polinomio *alocar_polinomio(unsigned n_termos)
+{
+  Polinomio *p = (Polinomio *)malloc(sizeof(Polinomio));
+  if (p == NULL)
+  {
+    return NULL;
+  }
+
+  p->coefs = (double *)calloc(n_termos, sizeof(double));
+  if (p->coefs == NULL)
+  {
+    free(p);
+    return NULL;
+  }
+
+  p->n_coefs = n_termos;
+  return p;
+}
+
+// Computa P(x)
+double eval(Polinomio *p, double x)
+{
+  double r = 0;
+  for (unsigned i = 0; i < p->n_coefs; i++)
+  {
+    r += p->coefs[i] * pow(x, i);
+  }
+  return r;
+}
+
+/// Preenche o polinômio conforme inputs da linha de comando @param p polinômio a ser preenchido.
+void ler_polinomio(Polinomio *p)
+{
+  for (int i = p->n_coefs - 1; i >= 0; i--)
+  {
+    do
+    {
+      printf("a%u = ", i);
+      scanf("%lf", &p->coefs[i]);
+
+      // Caso seja digitado an <= 0 OU a0 == 0
+    } while ((i == p->n_coefs - 1 && p->coefs[i] <= 0) || (i == 0 && p->coefs[i] == 0));
+  }
+}
+
+void liberar_polinomio(Polinomio *p)
+{
+  free(p->coefs);
+  free(p);
+  printf("polinomio desalocado\n");
+}
+
+double _L_teorema_de_lagrange(Polinomio *p)
+{
+  // Definir k e B
+  int k = 0, n = p->n_coefs - 1;
+  double B = 0;
+  for (int i = p->n_coefs - 1; i >= 0; i--)
+  {
+    if (p->coefs[i] < 0)
+    {
+      if (i > k)
+      {
+        k = i;
+      }
+      if (abs(p->coefs[i]) > B)
+      {
+        B = abs(p->coefs[i]);
+      }
+    }
+  }
+
+  return 1 + pow(B/p->coefs[n], 1/(n - k));
+}
+
+double _L1_teorema_de_lagrange(Polinomio *p);
+double _L2_teorema_de_lagrange(Polinomio *p);
+double _L3_teorema_de_lagrange(Polinomio *p);
+
+// deverá calcular e exibir os intervalos onde se encontram as
+// raízes reais negativas e as raízes reais positivas da equação.
+double teorema_de_lagrange(Polinomio *p)
+{
+  double L = _L_teorema_de_lagrange(p),
+         L1 = _L1_teorema_de_lagrange(p),
+         L2 = _L2_teorema_de_lagrange(p),
+         L3 = _L3_teorema_de_lagrange(p);
+
+  printf("intervalo contendo as raizes reais positivas: [%lf, %lf]\n", L1, L);
+  printf("intervalo contendo as raizes reais negativas: [%lf, %lf]\n", L2, L3);
+}
+
+int equacao_algebrica()
+{
+  // Solicitar o grau da equação
+  unsigned n = 0;
+  printf("Informe o grau da equacao: ");
+  scanf("%u", &n);
+
+  Polinomio *p = alocar_polinomio(n);
+  if (p == NULL)
+  {
+    printf("não foi possível alocar polinomio\n");
+    return -1;
+  }
+
+  // Solicitar os coeficientes an até a0
+  ler_polinomio(p);
+}
 
 // Equações Algébricas - FIM
 
@@ -296,11 +412,11 @@ int main(int argc, char const *argv[])
     {
     case 'C':
       printf("Conversão de Base\n");
-      //conversao_De_Base();
+      conversao_de_base();
       break;
     case 'E':
       printf("Equação Algébrica\n");
-      equacao_Algebrica();
+      equacao_algebrica();
       break;
     case 'S':
       printf("Sistema Linear\n");
