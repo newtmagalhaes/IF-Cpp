@@ -350,7 +350,8 @@ void ler_polinomio(Polinomio *p)
       scanf("%lf", &p->coefs[i]);
 
       // Caso seja digitado an <= 0 OU a0 == 0
-    } while ((i == p->n_coefs - 1 && p->coefs[i] <= 0) || (i == 0 && p->coefs[i] == 0));
+    } while ((i == p->n_coefs - 1 && p->coefs[i] <= 0)
+          || (i == 0 && p->coefs[i] == 0));
   }
 }
 
@@ -416,6 +417,13 @@ double _L_teorema_de_lagrange(Polinomio *p, _L_Lagrange l)
   }
 
   // Desfazendo alterações recuperando o polinômio original
+  if (desfazer_oposicao)
+  {
+    for (int i = 0; i < p->n_coefs; i++)
+    {
+      p->coefs[i] = -p->coefs[i];
+    }
+  }
   if (l == L3 || l == L1)
   {
     // (inverter a ordem dos coeficientes)
@@ -427,13 +435,6 @@ double _L_teorema_de_lagrange(Polinomio *p, _L_Lagrange l)
     _simetrico_indices_impares(p);
   }
 
-  if (desfazer_oposicao)
-  {
-    for (int i = 0; i < p->n_coefs; i++)
-    {
-      p->coefs[i] = -p->coefs[i];
-    }
-  }
   return 1 + pow(B / an, 1.0 / (n - k));
 }
 
@@ -448,6 +449,32 @@ void teorema_de_lagrange(Polinomio *p)
 
   printf("intervalo contendo as raizes reais negativas: [%lf, %lf]\n", Lni, Lns);
   printf("intervalo contendo as raizes reais positivas: [%lf, %lf]\n", Lpi, Lps);
+}
+
+double metodo_bissecao(Polinomio *p, double a, double b)
+{
+  int i = 0;
+  double m, erro;
+  do
+  {
+    i++;
+    m = (a + b) / 2;
+    erro = (b - a) / 2;
+    if (eval(p, m) == 0)
+    {
+      return m;
+    }
+    else if (eval(p, m) * eval(p, a) < 0)
+    {
+      b = m;
+    }
+    else
+    {
+      a = m;
+    }
+  } while (i <= 1000 || erro < _ERRO_TOLERAVEL);
+
+  return m;
 }
 
 int equacao_algebrica()
@@ -482,13 +509,14 @@ int equacao_algebrica()
   if (eval(p, a) * eval(p, b) < 0)
   {
     // calcular e exibir uma aproximação para uma raiz contida nesse intervalo
+    double m = metodo_bissecao(p, a, b);
+    printf("Aproximação para a raiz contida no intervalo: %lf\n", m);
   }
   else
   {
     // informar que o número de raízes no intervalo é par.
     printf("O numero de raizes no intervalo e par\n");
   }
-  
 
   liberar_polinomio(p);
   return 0;
