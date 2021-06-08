@@ -43,30 +43,97 @@ double parte_fracionaria(double valor) {
     return valor - (int) valor;
 }
 
-// Converte um número de base 10 para uma outra base
-char* converter_numDecimal(char* resultado, double numDecimal, int base) {
-    // Conversão da parte inteira
-    int parteInteira = (int) numDecimal;
-    int i = 0;
-    while (parteInteira > 0)
+// Calcula o resto da divisão de um número por 2
+char string_moduloBin(char* numDecimal, int posicaoFinal) {
+    char ultimoAlg = numDecimal[posicaoFinal - 1];
+    if (ultimoAlg == '0' || ultimoAlg == '2' || ultimoAlg == '4' || ultimoAlg == '6' || ultimoAlg == '8')
     {
-        resultado[i] = converter_algDecimal(parteInteira % base);
-        parteInteira /= base;
+        return '0';
+    }
+    else
+    {
+        return '1';
+    }
+}
+
+// Checa se o número armazenado na string é maior que 0
+char string_positiva(char* numDecimal, int posicaoFinal) {
+    for (int i = 0; i < posicaoFinal; i++)
+    {
+        if (numDecimal[i] > '0')
+        {
+            return TRUE;
+        }
+    }
+    return FALSE;
+}
+
+// Divide um número por 2
+void string_dividirBin(char* numDecimal, int posicaoFinal)
+{
+    int acum = 0;
+    for (int i = 0; i < posicaoFinal; i++)
+    {
+        int numConvertido = numDecimal[i] - '0';
+        numConvertido += acum;
+        if (numConvertido % 2 == 1)
+        {
+            acum = 10;
+        }
+        else
+        {
+            acum = 0;
+        }
+        numConvertido >>= 1;
+        numDecimal[i] = numConvertido + '0';
+    }
+}
+
+// Multiplica um número por 2 e retorna a parte inteira do número após a multiplicação
+char string_multiplicarBin(char* numDecimal, int posicaoInicial, int posicaoFinal)
+{
+    int acum = 0;
+    for (int i = posicaoFinal - 1; i > posicaoInicial; i--)
+    {
+        int numConvertido = numDecimal[i] - '0';
+        int aux = (numConvertido * 2) / 10;
+        numConvertido <<= 1;
+        numConvertido += acum;
+        // Se o resultado da multiplicação for 10 ou mais, irá armazenar para somar no próximo algarismo
+        acum = aux;
+        numDecimal[i] = numConvertido % 10 + '0';
+    }
+    return (acum > 0) + '0';
+}
+
+// Converte um número de base 10 para a base 2
+char* converter_numDecimal(char* resultado, char* numDecimal) {
+    int posicaoSeparador = 0;
+    int posicaoFinal = strlen(numDecimal);
+    int i = 0;
+    
+    while (numDecimal[i] != '.' && numDecimal[i] != '\0')
+    {
+        posicaoSeparador++;
+        i++;
+    }
+    // Conversão da parte inteira
+    i = 0;
+    while (string_positiva(numDecimal, posicaoSeparador))
+    {
+        resultado[i] = string_moduloBin(numDecimal, posicaoSeparador);
+        string_dividirBin(numDecimal, posicaoSeparador);
         i++;
     }
     resultado[i] = '\0';
     string_reversa(resultado);
     resultado[i] = '.';
     // Conversão da parte fracionária
-    double parteFracionaria = parte_fracionaria(numDecimal);
     i++;
     // A precisão é de 20 casas decimais
-    for (int j = 0; j < 20; j++) {
-        double produto = parteFracionaria * base;
-        resultado[i] = converter_algDecimal((int) produto);
-        parteFracionaria = parte_fracionaria(produto);
+    for (int j = 0; j < 80; j++) {
+        resultado[i] = string_multiplicarBin(numDecimal, posicaoSeparador, posicaoFinal);
         i++;
-//        printf("pf%2d: %.20f\n", i, parteFracionaria);
     }
     resultado[i] = '\0';
     return resultado;
@@ -112,7 +179,7 @@ char* converter_numBinario(char* resultado, char* numBinario, int base)
     int posicaoSeparador = 0;
     int posicaoFinal = strlen(numBinario);
     int i = 0;
-    int j;
+    int j = 0;
     
     while (numBinario[i] != '.')
     {
@@ -121,8 +188,6 @@ char* converter_numBinario(char* resultado, char* numBinario, int base)
     }
     limpar_string(resultado, 100);
     // Conversão da parte inteira
-    i = posicaoSeparador;
-    j = 0;
     do
     {
         i -= numDigitosPacote;
@@ -171,22 +236,35 @@ char* converter_numBinario(char* resultado, char* numBinario, int base)
     return resultado;
 }
 
+// Formata o número para 20 casas decimais
+void formatar_casas(char* numero) {
+    int i = 0;
+    while (numero[i] != '.')
+    {
+        i++;
+    }
+    numero[i + 21] = '\0';
+}
+
 void conversao_de_base()
 {
-    double numDecimal;
-    char numConvertido[100];
+    char numDecimal[51];
+    char numConvertido[250];
     
     printf("Digite um numero decimal: ");
-    scanf("%lf", &numDecimal);
+    scanf("%50s", numDecimal);
     printf("\nRepresentação\n");
-//    printf("Decimal: %.15f\n", numDecimal);
-    char numBinario[100];
-    strcpy(numBinario, converter_numDecimal(numConvertido, numDecimal, 2));
+    char numBinario[250];
+    strcpy(numBinario, converter_numDecimal(numConvertido, numDecimal));
+    char numOctal[90];
+    strcpy(numOctal, converter_numBinario(numConvertido, numBinario, 8));
+    char numHexadecimal[70];
+    strcpy(numHexadecimal, converter_numBinario(numConvertido, numBinario, 16));
+    formatar_casas(numBinario);
+    formatar_casas(numOctal);
     printf("Binario: %s\n", numBinario);
-    printf("Octal 1o: %s\n", converter_numDecimal(numConvertido, numDecimal, 8));
-    printf("Octal 2o: %s\n", converter_numBinario(numConvertido, numBinario, 8));
-    printf("Hexadecimal 1o: %s\n", converter_numDecimal(numConvertido, numDecimal, 16));
-    printf("Hexadecimal 2o: %s\n", converter_numBinario(numConvertido, numBinario, 16));
+    printf("Octal: %s\n", numOctal);
+    printf("Hexadecimal: %s\n", numHexadecimal);
 }
 
 // Conversões de base - FIM
