@@ -5,6 +5,9 @@
 #include <stdlib.h>
 #include <math.h>
 
+#define _ERRO_TOLERAVEL 1e-8
+#define _MAX_ITER 1000
+
 struct Polinomio
 {
   unsigned n_coefs;
@@ -59,6 +62,39 @@ double metodo_briot_ruffini(Polinomio *p, double x, unsigned i)
 double eval(Polinomio *p, double x)
 {
   return metodo_briot_ruffini(p, x, 0);
+}
+
+/**
+ *  Executa o método da bisseção
+ * @param p um polinômio para se determinar uma raíz;
+ * @param a o limite inferior do intervalo;
+ * @param b o limite superior do intervalo;
+ * @return m, uma raíz aproximada do polinômio contida dentro do intervalo
+*/
+double metodo_bissecao(Polinomio *p, double a, double b)
+{
+  int i = 0;
+  double m, erro;
+  do
+  {
+    i++;
+    m = (a + b) / 2;
+    erro = (b - a) / 2;
+    if (eval(p, m) == 0)
+    {
+      return m;
+    }
+    else if (eval(p, m) * eval(p, a) < 0)
+    {
+      b = m;
+    }
+    else
+    {
+      a = m;
+    }
+  } while (i <= _MAX_ITER || erro < _ERRO_TOLERAVEL);
+
+  return m;
 }
 
 // usado em _L_teorema_de_lagrange
