@@ -6,9 +6,10 @@
  *  - Vitor Bryan Melo de Lima
  * 
  * Orientações de Código:
- *  - O grafo é implementado como uma matriz de adjacências
- *  - 
- *  -
+ *  - O grafo é implementado como uma matriz de adjacências;
+ *  - O tipo Resposta contém o vetor anterior e o vetor de custos
+ *      para chegar a cada vértice, que são preenchidos ao longo
+ *      da execução do algoritmo de Dijkstra.
 */
 
 #include <stdio.h>
