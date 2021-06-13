@@ -8,14 +8,288 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <math.h>
 
 #define FILENAME_LENGTH 20
 #define _ERRO_TOLERAVEL 1e-8
+#define TRUE 1
+#define FALSE 0
 
 // Conversões de base - INÍCIO
+
+// Converte um valor decimal para um algarismo em uma outra base qualquer.
+// Vai apresentar comportamento inesperado caso o valor seja negativo ou grande o bastante
+char converter_algDecimal(int algDecimal)
+{
+  if (algDecimal <= 9)
+  {
+    return algDecimal + '0';
+  }
+  else
+  {
+    return algDecimal - 10 + 'A';
+  }
+}
+
+// Modifica uma string de forma que os seus elementos estejam na posição oposta a que começaram,
+// de acordo com o tamanho da string
+void string_reversa(char *string)
+{
+  int tamString = strlen(string);
+  int i;
+  for (i = 0; i < tamString / 2; i++)
+  {
+    char aux = string[i];
+    string[i] = string[tamString - i - 1];
+    string[tamString - i - 1] = aux;
+  }
+}
+
+// Retorna a parte fracionária de um número
+double parte_fracionaria(double valor)
+{
+  return valor - (int)valor;
+}
+
+// Calcula o resto da divisão de um número por 2
+char string_moduloBin(char *numDecimal, int posicaoFinal)
+{
+  char ultimoAlg = numDecimal[posicaoFinal - 1];
+  if (ultimoAlg == '0'
+      || ultimoAlg == '2'
+      || ultimoAlg == '4'
+      || ultimoAlg == '6'
+      || ultimoAlg == '8')
+  {
+    return '0';
+  }
+  else
+  {
+    return '1';
+  }
+}
+
+// Checa se o número armazenado na string é maior que 0
+int string_positiva(char *numDecimal, int posicaoFinal)
+{
+  for (int i = 0; i < posicaoFinal; i++)
+  {
+    if (numDecimal[i] > '0')
+    {
+      return TRUE;
+    }
+  }
+  return FALSE;
+}
+
+// Divide um número por 2
+void string_dividirBin(char *numDecimal, int posicaoFinal)
+{
+  int acum = 0;
+  for (int i = 0; i < posicaoFinal; i++)
+  {
+    int numConvertido = numDecimal[i] - '0';
+    numConvertido += acum;
+    if (numConvertido % 2 == 1)
+    {
+      acum = 10;
+    }
+    else
+    {
+      acum = 0;
+    }
+    numConvertido >>= 1;
+    numDecimal[i] = numConvertido + '0';
+  }
+}
+
+// Multiplica um número por 2 e retorna a parte inteira do número após a multiplicação
+char string_multiplicarBin(char *numDecimal, int posicaoInicial, int posicaoFinal)
+{
+  int acum = 0;
+  for (int i = posicaoFinal - 1; i > posicaoInicial; i--)
+  {
+    int numConvertido = numDecimal[i] - '0';
+    int aux = (numConvertido * 2) / 10;
+    numConvertido <<= 1;
+    numConvertido += acum;
+    // Se o resultado da multiplicação for 10 ou mais, irá armazenar para somar no próximo algarismo
+    acum = aux;
+    numDecimal[i] = numConvertido % 10 + '0';
+  }
+  return (acum > 0) + '0';
+}
+
+// Converte um número de base 10 para a base 2
+char *converter_numDecimal(char *resultado, char *numDecimal)
+{
+  int posicaoSeparador = 0;
+  int posicaoFinal = strlen(numDecimal);
+  int i = 0;
+
+  while (numDecimal[i] != '.' && numDecimal[i] != '\0')
+  {
+    posicaoSeparador++;
+    i++;
+  }
+  // Conversão da parte inteira
+  i = 0;
+  while (string_positiva(numDecimal, posicaoSeparador))
+  {
+    resultado[i] = string_moduloBin(numDecimal, posicaoSeparador);
+    string_dividirBin(numDecimal, posicaoSeparador);
+    i++;
+  }
+  resultado[i] = '\0';
+  string_reversa(resultado);
+  resultado[i] = '.';
+  // Conversão da parte fracionária
+  i++;
+  // A precisão é de 20 casas decimais
+  for (int j = 0; j < 80; j++)
+  {
+    resultado[i] = string_multiplicarBin(numDecimal, posicaoSeparador, posicaoFinal);
+    i++;
+  }
+  resultado[i] = '\0';
+  return resultado;
+}
+
+// Converte um valor binário, armazenado numa string, em um algarismo em uma base potência de 2
+char converter_algBinario(char *algBinario)
+{
+  int numConvertido = 0;
+  int numDigitos = strlen(algBinario);
+  for (int i = 0; i < numDigitos; i++)
+  {
+    // Transforma cada caractere em número e multiplica esse número por uma potência de 2 adequada
+    numConvertido += (algBinario[i] - '0') * 1 << (numDigitos - i - 1);
+  }
+  return converter_algDecimal(numConvertido);
+}
+
+// Limpa uma string, isto é, seta todos os caracteres para 0, até mesmo os caracteres nulos
+void limpar_string(char *string, int tamanhoString)
+{
+  for (int i = 0; i < tamanhoString; i++)
+  {
+    string[i] = 0;
+  }
+}
+
+// Calcula e devolve o logaritmo de um número na base 2. Funciona para logaritmandos que são potências de 2
+int logaritmo2(int logaritmando)
+{
+  int logaritmo = 0;
+  while (logaritmando > 1)
+  {
+    logaritmando /= 2;
+    logaritmo++;
+  }
+  return logaritmo;
+}
+
+// Converte um número de base 2 para uma outra base. Funciona para bases que são potências de 2
+char *converter_numBinario(char *resultado, char *numBinario, int base)
+{
+  int numDigitosPacote = logaritmo2(base);
+  int posicaoSeparador = 0;
+  int posicaoFinal = strlen(numBinario);
+  int i = 0;
+  int j = 0;
+
+  while (numBinario[i] != '.')
+  {
+    posicaoSeparador++;
+    i++;
+  }
+  limpar_string(resultado, 100);
+  // Conversão da parte inteira
+  do
+  {
+    i -= numDigitosPacote;
+    char algBinario[numDigitosPacote + 1];
+    for (int k = 0; k < numDigitosPacote; k++)
+    {
+      if (i + k >= 0)
+      {
+        algBinario[k] = numBinario[i + k];
+      }
+      else
+      {
+        algBinario[k] = '0';
+      }
+    }
+    algBinario[numDigitosPacote] = '\0';
+    resultado[j] = converter_algBinario(algBinario);
+    j++;
+  } while (i > 0);
+  resultado[j] = '\0';
+  string_reversa(resultado);
+  resultado[j] = '.';
+  // Conversão da parte fracionária
+  i = posicaoSeparador + 1;
+  j++;
+  do
+  {
+    char algBinario[numDigitosPacote + 1];
+    for (int k = 0; k < numDigitosPacote; k++)
+    {
+      if (i + k >= 0)
+      {
+        algBinario[k] = numBinario[i + k];
+      }
+      else
+      {
+        algBinario[k] = '0';
+      }
+    }
+    algBinario[numDigitosPacote] = '\0';
+    resultado[j] = converter_algBinario(algBinario);
+    i += numDigitosPacote;
+    j++;
+  } while (i < posicaoFinal);
+  resultado[j] = '\0';
+  return resultado;
+}
+
+// Formata o número para 20 casas decimais
+void formatar_casas(char *numero)
+{
+  int i = 0;
+  while (numero[i] != '.')
+  {
+    i++;
+  }
+  numero[i + 21] = '\0';
+}
+
 void conversao_de_base()
 {
+  char numDecimal[51];
+  char numConvertido[250];
+
+  printf("Digite um numero decimal: ");
+  scanf("%50s", numDecimal);
+
+  printf("\nRepresentação\n");
+  
+  char numBinario[250];
+  strcpy(numBinario, converter_numDecimal(numConvertido, numDecimal));
+  
+  char numOctal[90];
+  strcpy(numOctal, converter_numBinario(numConvertido, numBinario, 8));
+  
+  char numHexadecimal[70];
+  strcpy(numHexadecimal, converter_numBinario(numConvertido, numBinario, 16));
+  
+  formatar_casas(numBinario);
+  formatar_casas(numOctal);
+  
+  printf("Binario: %s\n", numBinario);
+  printf("Octal: %s\n", numOctal);
+  printf("Hexadecimal: %s\n", numHexadecimal);
 }
 
 // Conversões de base - FIM
@@ -350,8 +624,7 @@ void ler_polinomio(Polinomio *p)
       scanf("%lf", &p->coefs[i]);
 
       // Caso seja digitado an <= 0 OU a0 == 0
-    } while ((i == p->n_coefs - 1 && p->coefs[i] <= 0)
-          || (i == 0 && p->coefs[i] == 0));
+    } while ((i == p->n_coefs - 1 && p->coefs[i] <= 0) || (i == 0 && p->coefs[i] == 0));
   }
 }
 
