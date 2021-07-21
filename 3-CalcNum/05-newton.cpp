@@ -6,7 +6,9 @@
 
 int main(int argc, char const *argv[])
 {
-  Polinomio *p = alocar_polinomio_preenchido();
+  unsigned n = 0;
+  scanf("%u", &n);
+  Polinomio *p = alocar_polinomio(n);
   if (p == NULL)
   {
     return 1;
